@@ -1,0 +1,8 @@
+--- CONFIGURAÇÃO DE EXECUÇÃO ---
+Modelo: Ridge
+Divisão: Treino=80% / Teste=20% | K-Fold=10 | Random State=42
+
+Melhores Parâmetros (Execução Atual):
+{
+    "alpha": 1.0
+}

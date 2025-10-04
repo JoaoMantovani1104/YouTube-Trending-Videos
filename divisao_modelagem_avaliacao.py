@@ -33,7 +33,7 @@ def parse_args():
 
     return parser.parse_args()
 
-# --- Funções Auxiliares (MANTIDAS) ---
+# --- Funções Auxiliares ---
 
 def parse_params_string(params_string):
     """Converte a string de parâmetros (ex: 'a=0.1,b=1') em um dicionário de Grid Search."""
@@ -153,7 +153,41 @@ if __name__ == '__main__':
     df_results = pd.DataFrame(evaluation_results)
     df_results_pivot = df_results.pivot_table(index='Set', values=['RMSE', 'MAE', 'R2'])
 
-    # 1.6 Salvamento dos Resultados (Seções 5 e 6)
+    # ==============================================================================
+    # 1.6 Apresentação e Salvamento dos Resultados (REFORMULADO)
+    # ==============================================================================
+
+    print("\n" + "="*70)
+    print(f"RESUMO DA EXECUÇÃO - Modelo: {MODEL_NAME}")
+    print("="*70)
+
+    # Impressão da Configuração
+    print("\n--- Configuração de Treinamento ---")
+    print(f"Divisão: Treino={1 - TEST_SIZE:.0%} / Teste={TEST_SIZE:.0%} | K-Fold (CV)={K_FOLDS}")
+    print(f"Semente Aleatória (Random State): {RANDOM_STATE}")
+
+    # Impressão dos Hiperparâmetros
+    print("\n--- Melhores Hiperparâmetros Encontrados (Seção 5) ---")
+    print(json.dumps(best_params, indent=4))
+
+    # Impressão das Métricas de Regressão (RMSE, MAE, R2)
+    print("\n--- Métricas de Avaliação (Seção 6) ---")
+    # Formata os valores para melhor visualização (3 casas decimais)
+    df_results_formatted = df_results_pivot.apply(lambda x: x.apply('{:,.3f}'.format))
+    print(df_results_formatted)
+
+    # Análise Rápida de Overfitting
+    r2_train = df_results_pivot.loc['Treino', 'R2']
+    r2_test = df_results_pivot.loc['Teste', 'R2']
+    print("\n--- Análise de Overfitting (R2) ---")
+    print(f"R2 (Treino): {r2_train:.4f} | R2 (Teste): {r2_test:.4f}")
+
+    if (r2_train - r2_test) > 0.05 and r2_train > 0.8:
+        print("⚠️ Atenção: Potencial de Overfitting! Grande diferença entre R2 de Treino e Teste.")
+    elif r2_test < 0.5:
+        print("🔍 O modelo apresenta baixo poder de predição (R2 baixo) no conjunto de teste.")
+    else:
+        print("✅ Desempenho balanceado entre Treino e Teste.")
 
     # Salvando Hiperparâmetros (Documentação)
     output_params_path = os.path.join(FINAL_OUTPUT_DIR, f'04_documentacao_metodologia.txt')
@@ -168,18 +202,23 @@ if __name__ == '__main__':
     # Salvando Métricas
     output_table_path = os.path.join(FINAL_OUTPUT_DIR, '05_metricas_avaliacao.csv')
     df_results_pivot.to_csv(output_table_path)
-    print(f"Métricas de Avaliação salvas em: {output_table_path}")
+    print(f"\n✅ Métricas de Avaliação salvas em: {output_table_path}")
 
     # 1.7 Explicabilidade (Seção 7)
     if MODEL_NAME in ['RandomForest', 'GradientBoosting']:
         feature_importance = pd.Series(best_model.feature_importances_, index=X.columns).sort_values(ascending=False)
         plt.figure(figsize=(10, 6))
+        # Seleciona as 10 principais para o gráfico de barras
         feature_importance[:10].plot(kind='barh')
         plt.title(f'Top 10 Importância de Features - Modelo: {MODEL_NAME}')
         plt.tight_layout()
         output_plot_path = os.path.join(FINAL_OUTPUT_DIR, '06_importance.png')
         plt.savefig(output_plot_path)
         plt.close()
-        print(f"Gráfico de Explicabilidade salvo em: {output_plot_path}")
+        print(f"✅ Gráfico de Importância de Features salvo em: {output_plot_path}")
+    elif MODEL_NAME == 'Ridge':
+         print("\nModelo Ridge selecionado: Use coeficientes (coef_) para análise de importância (explicabilidade).")
 
-    print("\n--- EXECUÇÃO CONCLUÍDA ---")
+    print("\n" + "="*70)
+    print("EXECUÇÃO CONCLUÍDA. Verifique a pasta de resultados para os arquivos.")
+    print("="*70)
