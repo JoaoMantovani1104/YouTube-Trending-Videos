@@ -1,8 +1,16 @@
---- CONFIGURAÇÃO DE EXECUÇÃO ---
-Modelo: Ridge
-Divisão: Treino=80% / Teste=20% | K-Fold=10 | Random State=42
+========================================================
+          DOCUMENTAÇÃO DA METODOLOGIA E PARÂMETROS      
+========================================================
+Modelo Treinado: Ridge
+Problema: Regressão (Previsão da variável 'views')
+Métrica de Scoring Utilizada no Grid Search (CV): neg_mean_squared_error (RMSE negativo para otimização)
 
-Melhores Parâmetros (Execução Atual):
+--- Divisão de Dados (Seção 4) ---
+Divisão: Treino=80% / Teste=20%
+Cross-Validation (CV): K-Fold (k=10)
+Semente Aleatória (Random State): 42
+
+--- Melhores Hiperparâmetros Encontrados (Seção 5) ---
 {
     "alpha": 1.0
 }

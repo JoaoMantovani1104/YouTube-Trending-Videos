@@ -135,6 +135,7 @@ if __name__ == '__main__':
 
     # 1.4 Modelagem e Otimização (Seção 5)
     model = get_model(MODEL_NAME, PARAM_GRID, RANDOM_STATE)
+    # Métrica de Scoring para GridSearch, usando negativo para otimização (maior = melhor)
     scoring_metric = 'neg_mean_squared_error'
 
     # Usando Grid Search para treinar o modelo na ÚNICA combinação passada
@@ -154,9 +155,10 @@ if __name__ == '__main__':
     df_results_pivot = df_results.pivot_table(index='Set', values=['RMSE', 'MAE', 'R2'])
 
     # ==============================================================================
-    # 1.6 Apresentação e Salvamento dos Resultados (REFORMULADO)
+    # 1.6 Apresentação e Salvamento dos Resultados (REFORMULADO PARA CLAREZA)
     # ==============================================================================
 
+    # --- Saída de Console (Relatório Rápido) ---
     print("\n" + "="*70)
     print(f"RESUMO DA EXECUÇÃO - Modelo: {MODEL_NAME}")
     print("="*70)
@@ -172,7 +174,6 @@ if __name__ == '__main__':
 
     # Impressão das Métricas de Regressão (RMSE, MAE, R2)
     print("\n--- Métricas de Avaliação (Seção 6) ---")
-    # Formata os valores para melhor visualização (3 casas decimais)
     df_results_formatted = df_results_pivot.apply(lambda x: x.apply('{:,.3f}'.format))
     print(df_results_formatted)
 
@@ -189,26 +190,44 @@ if __name__ == '__main__':
     else:
         print("✅ Desempenho balanceado entre Treino e Teste.")
 
-    # Salvando Hiperparâmetros (Documentação)
+    # ----------------------------------------------------------------------
+    # 1. Salvando Hiperparâmetros (04_documentacao_metodologia.txt)
+    # ----------------------------------------------------------------------
     output_params_path = os.path.join(FINAL_OUTPUT_DIR, f'04_documentacao_metodologia.txt')
     with open(output_params_path, 'w') as f:
-        f.write("--- CONFIGURAÇÃO DE EXECUÇÃO ---\n")
-        f.write(f"Modelo: {MODEL_NAME}\n")
-        f.write(f"Divisão: Treino={1 - TEST_SIZE:.0%} / Teste={TEST_SIZE:.0%} | K-Fold={K_FOLDS} | Random State={RANDOM_STATE}\n")
-        f.write("\nMelhores Parâmetros (Execução Atual):\n")
+        f.write("========================================================\n")
+        f.write("          DOCUMENTAÇÃO DA METODOLOGIA E PARÂMETROS      \n")
+        f.write("========================================================\n")
+        f.write(f"Modelo Treinado: {MODEL_NAME}\n")
+        f.write(f"Problema: Regressão (Previsão da variável 'views')\n")
+        f.write(f"Métrica de Scoring Utilizada no Grid Search (CV): {scoring_metric} (RMSE negativo para otimização)\n")
+        f.write("\n--- Divisão de Dados (Seção 4) ---\n")
+        f.write(f"Divisão: Treino={1 - TEST_SIZE:.0%} / Teste={TEST_SIZE:.0%}\n")
+        f.write(f"Cross-Validation (CV): K-Fold (k={K_FOLDS})\n")
+        f.write(f"Semente Aleatória (Random State): {RANDOM_STATE}\n")
+        f.write("\n--- Melhores Hiperparâmetros Encontrados (Seção 5) ---\n")
         f.write(json.dumps(best_params, indent=4))
         f.write("\n")
 
-    # Salvando Métricas
+    # ----------------------------------------------------------------------
+    # 2. Salvando Métricas (05_metricas_avaliacao.csv)
+    # ----------------------------------------------------------------------
+
+    # Prepara o DataFrame para exportação, adicionando a diferença para análise de overfitting
+    df_export = df_results_pivot.copy()
+    difference = (df_export.loc['Treino'] - df_export.loc['Teste']).abs()
+    difference.name = 'Diferenca Absoluta (Treino vs Teste)'
+    df_export.loc['Diferenca Absoluta'] = difference
+
     output_table_path = os.path.join(FINAL_OUTPUT_DIR, '05_metricas_avaliacao.csv')
-    df_results_pivot.to_csv(output_table_path)
+    df_export.to_csv(output_table_path, float_format='%.4f') # Formata para 4 casas decimais no arquivo
+
     print(f"\n✅ Métricas de Avaliação salvas em: {output_table_path}")
 
     # 1.7 Explicabilidade (Seção 7)
     if MODEL_NAME in ['RandomForest', 'GradientBoosting']:
         feature_importance = pd.Series(best_model.feature_importances_, index=X.columns).sort_values(ascending=False)
         plt.figure(figsize=(10, 6))
-        # Seleciona as 10 principais para o gráfico de barras
         feature_importance[:10].plot(kind='barh')
         plt.title(f'Top 10 Importância de Features - Modelo: {MODEL_NAME}')
         plt.tight_layout()
