@@ -96,3 +96,98 @@ sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm', cbar=True)
 plt.title('Heatmap de Correlação entre Variáveis Numéricas')
 plt.tight_layout()
 plt.show() # Use plt.show() em um notebook real
+
+##Segunda etapa, pré-processamento
+
+
+# ==============================================================================
+# 5. Pré-processamento e Engenharia de Atributos (Seção 3.3)
+# Implementação baseada na metodologia descrita no relatório.
+# ==============================================================================
+
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+
+# Supondo que 'df' é o seu DataFrame carregado e com a coluna 'publish_time' convertida
+# df = pd.read_csv('youtube_trending_data.csv')
+# df['publish_time'] = pd.to_datetime(df['publish_time'])
+
+
+# --- 5.1 Tratamento de Dados Ausentes ---
+# Conforme o relatório, os valores nulos em 'likes' e 'comment_count'
+# [cite_start]serão imputados com a mediana para minimizar a influência de outliers[cite: 151].
+
+print("--- 5.1 Tratamento de Dados Ausentes ---")
+print(f"Valores ausentes em 'likes' antes: {df['likes'].isnull().sum()}")
+print(f"Valores ausentes em 'comment_count' antes: {df['comment_count'].isnull().sum()}")
+
+# Calcular a mediana ANTES de qualquer transformação
+median_likes = df['likes'].median()
+median_comment_count = df['comment_count'].median()
+
+# Imputar os valores ausentes com a mediana
+df['likes'].fillna(median_likes, inplace=True)
+df['comment_count'].fillna(median_comment_count, inplace=True)
+
+print(f"\nValores ausentes em 'likes' depois: {df['likes'].isnull().sum()}")
+print(f"Valores ausentes em 'comment_count' depois: {df['comment_count'].isnull().sum()}\n")
+
+
+# --- 5.2 Transformação Logarítmica ---
+# Aplicar a transformação log(1+x) nas variáveis com forte assimetria para
+# [cite_start]estabilizar a variância, conforme planejado[cite: 152].
+# Usamos np.log1p(x) que é equivalente a np.log(1+x) e lida com valores 0 de forma segura.
+
+print("--- 5.2 Aplicando Transformação Logarítmica ---")
+cols_to_log = ['views', 'likes', 'comment_count']
+# A coluna 'dislikes' também possui assimetria, então incluí-la na transformação é uma boa prática.
+if 'dislikes' not in cols_to_log:
+    cols_to_log.append('dislikes')
+
+for col in cols_to_log:
+    df[f'{col}_log'] = np.log1p(df[col])
+    print(f"Coluna '{col}_log' criada.")
+
+# O DataFrame agora contém as versões originais e as transformadas.
+# Para a modelagem, usaremos as colunas com sufixo '_log'.
+
+
+# --- 5.3 Codificação de Variáveis Categóricas (One-Hot Encoding) ---
+# [cite_start]A variável 'category_id' será transformada usando One-Hot Encoding[cite: 153].
+# Isso cria novas colunas binárias para cada categoria.
+
+print("\n--- 5.3 Aplicando One-Hot Encoding em 'category_id' ---")
+# Usando pd.get_dummies para aplicar o One-Hot Encoding
+# O prefixo 'category' ajuda a identificar as novas colunas
+# Convertendo 'category_id' para string para evitar tratamento numérico
+df_encoded = pd.get_dummies(df, columns=['category_id'], prefix='category', dtype=int)
+
+print("Shape do DataFrame antes do One-Hot Encoding:", df.shape)
+print("Shape do DataFrame depois do One-Hot Encoding:", df_encoded.shape)
+print("Novas colunas de categoria criadas.")
+
+
+# --- 5.4 Normalização (Padronização) ---
+# As variáveis numéricas transformadas serão padronizadas para terem média 0 e desvio padrão 1,
+# [cite_start]garantindo que contribuam igualmente para o modelo[cite: 154].
+
+print("\n--- 5.4 Padronizando as Features Numéricas ---")
+scaler = StandardScaler()
+
+# Selecionar as colunas numéricas que foram transformadas para a padronização
+numerical_log_cols = ['views_log', 'likes_log', 'dislikes_log', 'comment_count_log']
+
+# 'Fitar' e transformar os dados. O resultado é um array NumPy.
+df_encoded[numerical_log_cols] = scaler.fit_transform(df_encoded[numerical_log_cols])
+
+print("Features numéricas padronizadas com sucesso.")
+print("\n--- Amostra dos dados após pré-processamento ---")
+# Exibindo as colunas transformadas para verificação
+print(df_encoded[numerical_log_cols].head())
+
+
+# ==============================================================================
+# O DataFrame 'df_encoded' está pronto para a próxima etapa: Divisão dos Dados
+# ==============================================================================
+
