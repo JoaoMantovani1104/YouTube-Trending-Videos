@@ -1,0 +1,10 @@
+--- CONFIGURAÇÃO DE EXECUÇÃO ---
+Modelo: RandomForest
+Divisão: Treino=80% / Teste=20% | K-Fold=5 | Random State=42
+
+Melhores Parâmetros (Execução Atual):
+{
+    "max_depth": 10,
+    "min_samples_split": 5,
+    "n_estimators": 100
+}
