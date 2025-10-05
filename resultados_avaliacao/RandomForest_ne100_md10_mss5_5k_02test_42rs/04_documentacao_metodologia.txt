@@ -1,8 +1,16 @@
---- CONFIGURAÃ‡ÃƒO DE EXECUÃ‡ÃƒO ---
-Modelo: RandomForest
-DivisÃ£o: Treino=80% / Teste=20% | K-Fold=5 | Random State=42
+========================================================
+          DOCUMENTAÇÃO DA METODOLOGIA E PARÂMETROS      
+========================================================
+Modelo Treinado: RandomForest
+Problema: Regressão (Previsão da variável 'views')
+Métrica de Scoring Utilizada no Grid Search (CV): neg_mean_squared_error (RMSE negativo para otimização)
 
-Melhores ParÃ¢metros (ExecuÃ§Ã£o Atual):
+--- Divisão de Dados (Seção 4) ---
+Divisão: Treino=80% / Teste=20%
+Cross-Validation (CV): K-Fold (k=5)
+Semente Aleatória (Random State): 42
+
+--- Melhores Hiperparâmetros Encontrados (Seção 5) ---
 {
     "max_depth": 10,
     "min_samples_split": 5,
