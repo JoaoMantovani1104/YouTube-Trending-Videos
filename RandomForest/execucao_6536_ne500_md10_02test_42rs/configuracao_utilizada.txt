@@ -1,0 +1,17 @@
+CONFIGURAÇÃO DO EXPERIMENTO
+==================================================
+
+execucao: execucao_6536_ne500_md10_02test_42rs
+modelo: RandomForest
+parametros: {'n_estimators': 500, 'max_depth': 10, 'random_state': 42}
+tamanho_teste: 0.2
+random_state: 42
+num_amostras_treino: 4000
+num_amostras_teste: 1000
+num_features: 10
+
+RESULTADOS FINAIS
+------------------------------
+R² no teste: 0.980625
+RMSE no teste: 0.14
+MAE no teste: 0.10
