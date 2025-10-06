@@ -111,22 +111,3 @@ resultados_avaliacao/RandomForest_ne100_md10_mss5_5k_02test_42rs/
 ├── 05_metricas_avaliacao.csv         # métricas de desempenho (treino/val/test)
 └── 06_importance.png                 # importância de features (quando aplicável)
 ```
-
-## 5. Dicas rápidas
-
-**Observações sobre `--params`:**
-- Separe pares `chave=valor` por vírgula, sem espaços.
-- Os nomes das chaves dependem do modelo (veja seção 3).
-- Valores decimais usam ponto como separador (ex: `learning_rate=0.05`).
-
-**Configurações gerais:**
-- Use `--k_folds` para validação cruzada; escolha 5 ou 10, conforme tamanho do conjunto.
-- Defina `--test_size` como porcentagem (ex.: `0.2` para 20%).
-- Inclua um `random_state` nos `--params` para reprodutibilidade quando suportado.
-- Consulte os nomes de parâmetro aceitos no código-fonte do projeto para garantir compatibilidade.
-
-## Contato
-Para dúvidas ou problemas, abra uma issue no repositório com o comando usado e o log de execução.
-
----
-Arquivo gerado automaticamente com instruções de execução.
